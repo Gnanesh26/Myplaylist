@@ -1,13 +1,14 @@
 package my.playlist.Dto;
 
-import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.sql.Date;
 
 public class MyplaylistDto {
 
     private Long id;
     private String title;
     private String genres;
-    private Date uploadedDate;
+    private String uploadedDate; // Change the type to String
     private String thumbnailId;
     private String thumbnailUrl;
     private String artist;
@@ -16,14 +17,20 @@ public class MyplaylistDto {
         this.id = id;
         this.title = title;
         this.genres = genres;
-        this.uploadedDate = uploadedDate;
         this.thumbnailId = thumbnailId;
         this.thumbnailUrl = thumbnailUrl;
         this.artist = artist;
+
+        // Convert the Date to a formatted String using SimpleDateFormat
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        this.uploadedDate = dateFormat.format(uploadedDate);
     }
 
     public MyplaylistDto() {
     }
+
+//    public MyplaylistDto(Long id, String title, String genres, String uploadedDate, String thumbnailId, String thumbnailUrl, String artist) {
+//    }
 
     public Long getId() {
         return id;
@@ -49,12 +56,14 @@ public class MyplaylistDto {
         this.genres = genres;
     }
 
-    public Date getUploadedDate() {
+    public String getUploadedDate() {
         return uploadedDate;
     }
 
     public void setUploadedDate(Date uploadedDate) {
-        this.uploadedDate = uploadedDate;
+        // Convert the Date to a formatted String using SimpleDateFormat
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        this.uploadedDate = dateFormat.format(uploadedDate);
     }
 
     public String getThumbnailId() {

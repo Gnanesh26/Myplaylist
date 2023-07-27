@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
 
-    <changeSet id="1" author="Gnanesh">
+    <changeSet id="02" author="Ganesh">
         <createTable tableName="Myplaylist">
             <column name="id" type="INT"/>
             <column name="title" type="VARCHAR(255)"/>
