@@ -1,0 +1,19 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="1" author="Gnanesh">
+        <createTable tableName="Myplaylist">
+            <column name="id" type="INT"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="genres" type="VARCHAR(255)"/>
+            <column name="uploaded_date" type="DATE"/>
+            <column name="thumbnail_id" type="VARCHAR(100)"/>
+            <column name="thumbnail_url" type="VARCHAR(255)"/>
+            <column name="artist" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
