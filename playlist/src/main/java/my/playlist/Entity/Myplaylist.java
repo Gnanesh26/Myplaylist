@@ -2,7 +2,6 @@ package my.playlist.Entity;
 
 import jakarta.persistence.*;
 
-import java.sql.Date;
 
 
 @Entity
@@ -20,7 +19,7 @@ public class Myplaylist{
     private String genres;
 
     @Column(name = "uploaded_date", nullable = false)
-    private Date uploadedDate;
+    private String uploadedDate;
 
     @Column(name = "thumbnail_id", length = 100)
     private String thumbnailId;
@@ -31,7 +30,7 @@ public class Myplaylist{
     @Column(nullable = false, length = 100)
     private String artist;
 
-    public Myplaylist(Long id, String title, String genres, Date uploadedDate, String thumbnailId, String thumbnailUrl, String artist) {
+    public Myplaylist(Long id, String title, String genres, String uploadedDate, String thumbnailId, String thumbnailUrl, String artist) {
         this.id = id;
         this.title = title;
         this.genres = genres;
@@ -68,11 +67,11 @@ public class Myplaylist{
         this.genres = genres;
     }
 
-    public Date getUploadedDate() {
+    public String getUploadedDate() {
         return uploadedDate;
     }
 
-    public void setUploadedDate(Date uploadedDate) {
+    public void setUploadedDate(String uploadedDate) {
         this.uploadedDate = uploadedDate;
     }
 

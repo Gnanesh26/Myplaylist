@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.sql.Date;
 import java.util.Map;
 
 @Service
@@ -25,11 +25,26 @@ public class MyplaylistService {
     @Autowired
     private Cloudinary cloudinary; // Autowire Cloudinary instance (configured with API key and secret)
 
-    public MyplaylistDto createPlaylist(MultipartFile file, String title, String genres, String uploadedDate, String artist) {
+
+    public MyplaylistDto createPlaylist(
+            MultipartFile file,
+            String title,
+            String genres,
+            String uploadedDate,
+            String artist) {
+
         try {
-            // Parse the uploadedDate string to a Date object
+            // Validate the uploadedDate format using SimpleDateFormat
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date parsedDate = new Date(dateFormat.parse(uploadedDate).getTime()); // Use java.sql.Date
+            dateFormat.setLenient(false); // Disable lenient parsing ( will strictly enforce the date format, and any deviation from the specified format will result in a ParseException)
+
+            Date parsedDate;
+//  checks if the uploadedDate string is in the "yyyy-MM-dd" format, converts it to a Date object if valid, or throws an error if the format is incorrect.
+            try {
+                parsedDate = new Date(dateFormat.parse(uploadedDate).getTime());
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
+            }
 
             // Upload the file to Cloudinary and get the thumbnail URL and ID
             String thumbnailUrl = null;
@@ -44,7 +59,7 @@ public class MyplaylistService {
             Myplaylist playlistEntity = new Myplaylist();
             playlistEntity.setTitle(title);
             playlistEntity.setGenres(genres);
-            playlistEntity.setUploadedDate(parsedDate); // Use java.sql.Date
+            playlistEntity.setUploadedDate(String.valueOf(parsedDate)); // Use java.sql.Date
             playlistEntity.setThumbnailUrl(thumbnailUrl);
             playlistEntity.setThumbnailId(thumbnailId);
             playlistEntity.setArtist(artist);
@@ -66,16 +81,14 @@ public class MyplaylistService {
                     savedEntity.getId(),
                     savedEntity.getTitle(),
                     savedEntity.getGenres(),
-                   savedEntity.getUploadedDate(),
+                    savedEntity.getUploadedDate(),
                     savedEntity.getThumbnailId(),
                     savedEntity.getThumbnailUrl(),
                     savedEntity.getArtist()
             );
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-
             throw new RuntimeException("Error while creating playlist: " + e.getMessage());
         }
     }
-
 }

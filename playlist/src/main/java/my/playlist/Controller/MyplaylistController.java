@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Date;
 
 
 @RestController
@@ -18,21 +19,36 @@ public class MyplaylistController {
     @Autowired
     MyplaylistService myplaylistService;
 
-
     @PostMapping("/upload")
-    public ResponseEntity<MyplaylistDto> createMyplaylist(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("title") String title,
-            @RequestParam("genres") String genres,
-            @RequestParam("uploadedDate") String uploadedDate, // Change the type to String
-            @RequestParam("artist") String artist
-    ) {
+    public ResponseEntity<?> createMyplaylist(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("genres") String genres, @RequestParam("uploadedDate") String uploadedDate, @RequestParam("artist") String artist) {
         try {
-            MyplaylistDto createdPlaylist = myplaylistService.createPlaylist(file, title, genres, uploadedDate, artist); // Pass the uploadedDate as String
+            MyplaylistDto createdPlaylist = myplaylistService.createPlaylist(file, title, genres, uploadedDate, artist);
             return new ResponseEntity<>(createdPlaylist, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            // Catch the IllegalArgumentException and return a custom error message in the response
+            String errorMessage = "Invalid date format for uploadedDate. Expected format: yyyy-MM-dd";
+            return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+//    @PostMapping("/upload")
+//    public ResponseEntity<MyplaylistDto> createMyplaylist(
+//            @RequestParam("file") MultipartFile file,
+//            @RequestParam("title") String title,
+//            @RequestParam("genres") String genres,
+////            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date uploadedDate,
+//            @RequestParam("uploadedDate") String uploadedDate, // Receive as String
+//
+//            @RequestParam("artist") String artist
+//    ) {
+//        try {
+//            MyplaylistDto createdPlaylist = myplaylistService.createPlaylist(file, title, genres,uploadedDate, artist); // Pass the uploadedDate as String
+//            return new ResponseEntity<>(createdPlaylist, HttpStatus.CREATED);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 }
