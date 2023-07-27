@@ -22,7 +22,7 @@ public class Cloudinaryconfig {
     private String apiSecret;
 
     @Bean
-    @Primary // Add @Primary annotation to indicate this bean should take precedence
+//    @Primary // Add @Primary annotation to indicate this bean should take precedence
     public Cloudinary cloudinaryConfig() {
         Map<String, String> cloudinaryConfig = new HashMap<>();
         cloudinaryConfig.put("cloud_name", cloudName);

@@ -20,18 +20,12 @@ import java.util.Map;
 public class MyplaylistService {
 
     @Autowired
-    private MyplaylistRepository myplaylistRepository;
+    MyplaylistRepository myplaylistRepository;
 
     @Autowired
-    private Cloudinary cloudinary; // Autowire Cloudinary instance (configured with API key and secret)
+  Cloudinary cloudinary; // Autowire Cloudinary instance (configured with API key and secret)
 
-
-    public MyplaylistDto createPlaylist(
-            MultipartFile file,
-            String title,
-            String genres,
-            String uploadedDate,
-            String artist) {
+    public MyplaylistDto createPlaylist(MultipartFile file, String title, String genres, String uploadedDate, String artist) {
 
         try {
             // Validate the uploadedDate format using SimpleDateFormat
@@ -50,7 +44,7 @@ public class MyplaylistService {
             String thumbnailUrl = null;
             String thumbnailId = null;
             if (file != null && !file.isEmpty()) {
-                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());//uploads the file to the Cloudinary service
                 thumbnailUrl = (String) uploadResult.get("secure_url");
                 thumbnailId = (String) uploadResult.get("public_id");
             }
