@@ -51,18 +51,29 @@ public class MyplaylistService {
 
             Myplaylist savedEntity = myplaylistRepository.save(playlistEntity);
 
+            // Print all the fields of the created playlist
+            System.out.println("Created playlist details:");
+            System.out.println("ID: " + savedEntity.getId());
+            System.out.println("Title: " + savedEntity.getTitle());
+            System.out.println("Genres: " + savedEntity.getGenres());
+            System.out.println("Uploaded Date: " + savedEntity.getUploadedDate());
+            System.out.println("Thumbnail ID: " + savedEntity.getThumbnailId());
+            System.out.println("Thumbnail URL: " + savedEntity.getThumbnailUrl());
+            System.out.println("Artist: " + savedEntity.getArtist());
+
             // Convert the saved entity to DTO and return
             return new MyplaylistDto(
                     savedEntity.getId(),
                     savedEntity.getTitle(),
                     savedEntity.getGenres(),
-                   savedEntity.getUploadedDate(), // Keep the String type in DTO
+                   savedEntity.getUploadedDate(),
                     savedEntity.getThumbnailId(),
                     savedEntity.getThumbnailUrl(),
                     savedEntity.getArtist()
             );
         } catch (ParseException | IOException e) {
             e.printStackTrace();
+
             throw new RuntimeException("Error while creating playlist: " + e.getMessage());
         }
     }
