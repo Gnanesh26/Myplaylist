@@ -126,11 +126,11 @@ public class MyplaylistController {
 
     @PreAuthorize("hasAuthority('artist')")
     @PostMapping("/byusers")
-    public ResponseEntity<String> addSong(@RequestParam(value = "title", required = false) String title,
-                                          @RequestParam(value = "genres", required = false) String genres,
-                                          @RequestParam(value = "uploadedDate", required = false) String uploadedDateStr,
-                                          @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
-                                          @RequestParam(value="artist",required = false) String artist,
+    public ResponseEntity<String> addSong(@RequestParam String title,
+                                          @RequestParam String genres,
+                                          @RequestParam (value ="uploadedDate")String uploadedDateStr,
+                                          @RequestParam MultipartFile thumbnailFile,
+                                          @RequestParam String artist,
                                           Principal principal) {
         String authenticatedArtist = principal.getName();
 
