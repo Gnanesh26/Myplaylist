@@ -90,13 +90,7 @@ public class MyplaylistService {
 
             // Convert the saved entity to DTO and return
             return new MyplaylistDto(
-                    savedEntity.getId(),
-                    savedEntity.getTitle(),
-                    savedEntity.getGenres(),
-                    savedEntity.getUploadedDate(),
-                    savedEntity.getThumbnailId(),
-                    savedEntity.getThumbnailUrl(),
-                    savedEntity.getArtist()
+                    savedEntity.getId(), savedEntity.getTitle(), savedEntity.getGenres(), savedEntity.getUploadedDate(), savedEntity.getThumbnailId(), savedEntity.getThumbnailUrl(), savedEntity.getArtist()
             );
         } catch (IOException e) {
             e.printStackTrace();
@@ -138,28 +132,12 @@ public class MyplaylistService {
             // Sort by title matching the specified value
             List<MyplaylistDto> playlistsWithTitle = filteredPlaylists.stream()
                     .filter(playlist -> playlist.getTitle().equalsIgnoreCase(title))
-                    .map(playlist -> new MyplaylistDto(
-                            playlist.getId(),
-                            playlist.getTitle(),
-                            playlist.getGenres(),
-                            playlist.getUploadedDate(),
-                            playlist.getThumbnailId(),
-                            playlist.getThumbnailUrl(),
-                            playlist.getArtist()
-                    ))
+                    .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
                     .collect(Collectors.toList());
 
             List<MyplaylistDto> remainingPlaylists = filteredPlaylists.stream()
                     .filter(playlist -> !playlist.getTitle().equalsIgnoreCase(title))
-                    .map(playlist -> new MyplaylistDto(
-                            playlist.getId(),
-                            playlist.getTitle(),
-                            playlist.getGenres(),
-                            playlist.getUploadedDate(),
-                            playlist.getThumbnailId(),
-                            playlist.getThumbnailUrl(),
-                            playlist.getArtist()
-                    ))
+                    .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
                     .collect(Collectors.toList());
 
             playlistsWithTitle.sort(Comparator.comparing(MyplaylistDto::getTitle));
@@ -172,15 +150,7 @@ public class MyplaylistService {
         } else {
             // If sortField is empty, sort by uploaded date in descending order
             sortedPlaylists = filteredPlaylists.stream()
-                    .map(playlist -> new MyplaylistDto(
-                            playlist.getId(),
-                            playlist.getTitle(),
-                            playlist.getGenres(),
-                            playlist.getUploadedDate(),
-                            playlist.getThumbnailId(),
-                            playlist.getThumbnailUrl(),
-                            playlist.getArtist()
-                    ))
+                    .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
                     .sorted(Comparator.comparing(MyplaylistDto::getUploadedDate).reversed())
                     .collect(Collectors.toList());
 
@@ -224,24 +194,8 @@ public class MyplaylistService {
 
         // Combine both lists and convert to MyplaylistDto objects
         List<MyplaylistDto> playlistDtos = Stream.concat(
-                givenDatePlaylists.stream().map(playlist -> new MyplaylistDto(
-                        playlist.getId(),
-                        playlist.getTitle(),
-                        playlist.getGenres(),
-                        playlist.getUploadedDate(),
-                        playlist.getThumbnailId(),
-                        playlist.getThumbnailUrl(),
-                        playlist.getArtist()
-                )),
-                remainingPlaylists.stream().map(playlist -> new MyplaylistDto(
-                        playlist.getId(),
-                        playlist.getTitle(),
-                        playlist.getGenres(),
-                        playlist.getUploadedDate(),
-                        playlist.getThumbnailId(),
-                        playlist.getThumbnailUrl(),
-                        playlist.getArtist()
-                ))
+                givenDatePlaylists.stream().map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist())),
+                remainingPlaylists.stream().map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
         ).collect(Collectors.toList());
 
         return playlistDtos;
