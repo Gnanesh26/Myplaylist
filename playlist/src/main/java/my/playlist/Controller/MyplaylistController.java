@@ -9,6 +9,7 @@ import my.playlist.Repository.MyplaylistRepository;
 import my.playlist.Repository.UserInfoRepository;
 import my.playlist.Service.MyplaylistService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -171,6 +172,28 @@ public class MyplaylistController {
             return ResponseEntity.ok("Song added successfully");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
+        }
+    }
+
+
+    @PreAuthorize("hasAuthority('artist')")
+    @DeleteMapping("/{songId}")
+    public ResponseEntity<String> deleteSong(@PathVariable Long songId, Principal principal) {
+//        String artistUsername = principal.getName();
+
+        String authenticatedArtist = principal.getName();
+
+        // Retrieve the song by ID
+        Myplaylist songToDelete = myplaylistRepository.findById(Math.toIntExact(songId))
+                .orElseThrow(() -> new RuntimeException("Song not found"));
+
+        // Check if the authenticated artist is the owner of the song
+        if (songToDelete.getArtist().equals(principal.getName())) {
+            // Delete the song
+            myplaylistRepository.delete(songToDelete);
+            return ResponseEntity.ok("Song deleted successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
         }
     }
 }
