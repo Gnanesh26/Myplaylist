@@ -18,7 +18,7 @@ public class Myplaylist{
     @Column(nullable = false, length = 255)
     private String genres;
 
-    @Column(name = "uploaded_date", nullable = false)
+    @Column(name = "uploaded_date", nullable =false)
     private String uploadedDate;
 
     @Column(name = "thumbnail_id", length = 100)
