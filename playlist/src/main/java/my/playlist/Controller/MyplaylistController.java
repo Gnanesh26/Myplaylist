@@ -62,31 +62,14 @@ public class MyplaylistController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//    @PostMapping("/upload")
-//    public ResponseEntity<MyplaylistDto> createMyplaylist(
-//            @RequestParam("file") MultipartFile file,
-//            @RequestParam("title") String title,
-//            @RequestParam("genres") String genres,
-////            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date uploadedDate,
-//            @RequestParam("uploadedDate") String uploadedDate, // Receive as String
-//
-//            @RequestParam("artist") String artist
-//    ) {
-//        try {
-//            MyplaylistDto createdPlaylist = myplaylistService.createPlaylist(file, title, genres,uploadedDate, artist); // Pass the uploadedDate as String
-//            return new ResponseEntity<>(createdPlaylist, HttpStatus.CREATED);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+
 
 
 //    // add users  to db
-//    @PostMapping("/add")
-//    public String addNewUser(@RequestBody UserInfo userInfo) {
-//        return myplaylistService.addUser(userInfo);
-//    }
+    @PostMapping("/add")
+    public String addNewUser(@RequestBody UserInfo userInfo) {
+        return myplaylistService.addUser(userInfo);
+    }
 
 
     @PreAuthorize("hasAuthority('listener')")
