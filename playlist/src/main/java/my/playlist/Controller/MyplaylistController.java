@@ -1,7 +1,11 @@
 package my.playlist.Controller;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import my.playlist.Dto.MyplaylistDto;
+import my.playlist.Entity.Myplaylist;
 import my.playlist.Entity.UserInfo;
+import my.playlist.Repository.MyplaylistRepository;
 import my.playlist.Service.MyplaylistService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +15,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.security.Principal;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -21,24 +31,30 @@ public class MyplaylistController {
 
     @Autowired
     MyplaylistService myplaylistService;
-    UserInfo userInfo;
+    @Autowired
+    Cloudinary cloudinary;
 
-    //
 
-    @PostMapping("/upload")
-    public ResponseEntity<?> createMyplaylist(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("genres") String genres, @RequestParam("uploadedDate") String uploadedDate, @RequestParam("artist") String artist) {
-        try {
-            MyplaylistDto createdPlaylist = myplaylistService.createPlaylist(file, title, genres, uploadedDate, artist);
-            return new ResponseEntity<>(createdPlaylist, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            // Catch the IllegalArgumentException and return a custom error message in the response
-            String errorMessage = "Invalid date format for uploadedDate. Expected format: yyyy-MM-dd";
-            return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+    @Autowired
+    MyplaylistRepository myplaylistRepository;
+
+
+    // sample uploading to db
+
+//    @PostMapping("/upload")
+//    public ResponseEntity<?> createMyplaylist(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("genres") String genres, @RequestParam("uploadedDate") String uploadedDate, @RequestParam("artist") String artist) {
+//        try {
+//            MyplaylistDto createdPlaylist = myplaylistService.createPlaylist(file, title, genres, uploadedDate, artist);
+//            return new ResponseEntity<>(createdPlaylist, HttpStatus.CREATED);
+//        } catch (IllegalArgumentException e) {
+//            // Catch the IllegalArgumentException and return a custom error message in the response
+//            String errorMessage = "Invalid date format for uploadedDate. Expected format: yyyy-MM-dd";
+//            return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 //    @PostMapping("/upload")
 //    public ResponseEntity<MyplaylistDto> createMyplaylist(
 //            @RequestParam("file") MultipartFile file,
@@ -66,8 +82,6 @@ public class MyplaylistController {
 //    }
 
 
-
-
     @PreAuthorize("hasAuthority('listener')")
     @GetMapping("/songs")
     public ResponseEntity<?> getSongs(
@@ -77,7 +91,7 @@ public class MyplaylistController {
 //            @RequestParam(value = "title", defaultValue = "") String title,
             @RequestParam(required = false) String title,
 //            @RequestParam(required = false, defaultValue = "") String date) {
-            @RequestParam(required = false) String date){
+            @RequestParam(required = false) String date) {
 
         // Check if at least one search, filter, or sort parameter is provided
         if (StringUtils.isAllBlank(searchTitle, filterArtist, filterGenres) && StringUtils.isBlank(title) && StringUtils.isBlank(date)) {
@@ -102,6 +116,92 @@ public class MyplaylistController {
                 return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>(songsByTitle, HttpStatus.OK);
+        }
+    }
+
+
+    @PreAuthorize("hasAuthority('artist')")
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> addSong(@RequestParam(value = "title", required = false) String title,
+                                          @RequestParam(value = "genres", required = false) String genres,
+                                          @RequestParam(value = "uploadedDate", required = false) String uploadedDateStr,
+                                          @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
+                                          @RequestParam(value="artist",required = true) String artist,
+                                          Principal principal) {
+        String authenticatedArtist = principal.getName();
+
+        String authenticatedUsername = principal.getName();
+
+        // Get the artist from the authenticated username
+        String artist1 = getArtistFromUsername(authenticatedUsername);
+
+        if (artist == null || artist.isEmpty()) {
+            artist = getArtistFromUsername(authenticatedUsername);
+        }
+
+        // Check if the authenticated username matches the provided artist name or username
+        if (!authenticatedUsername.equals(artist)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to upload songs for other artists.");
+        }
+
+        // Rest of the method remains unchanged...
+    
+
+
+        // Create a new Song object with the extracted data
+        Myplaylist newSong = new Myplaylist();
+
+        if (title != null) {
+            newSong.setTitle(title);
+        }
+
+        if (genres != null) {
+            newSong.setGenres(genres);
+        }
+
+        newSong.setUploadedDate(uploadedDateStr);
+
+        newSong.setArtist(artist);
+        newSong.setArtist(artist); // Set the artist to the extracted artist
+
+        try {
+            // Upload the thumbnail image to Cloudinary
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                Map<?, ?> cloudinaryResponse = cloudinary.uploader().upload(thumbnailFile.getBytes(), ObjectUtils.emptyMap());
+
+                // Get the thumbnail URL and ID from the Cloudinary response
+                String thumbnailUrl = (String) cloudinaryResponse.get("secure_url");
+                String thumbnailId = (String) cloudinaryResponse.get("public_id");
+
+                // Set the thumbnailUrl and thumbnailId in the newSong object
+                newSong.setThumbnailUrl(thumbnailUrl);
+                newSong.setThumbnailId(thumbnailId);
+            }
+
+            // Save the new song to the database
+            myplaylistRepository.save(newSong);
+
+            return ResponseEntity.ok("Song added successfully");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
+        }
+    }
+
+    // Helper method to retrieve artist from the username (implement as per your system's logic)
+    private String getArtistFromUsername(String username) {
+        // Implement the logic to retrieve the artist associated with the username from your database or service.
+        // If the association does not exist or the username is not associated with any artist, return null.
+        // Otherwise, return the artist name.
+        // Example: you might have a mapping table or a user profile that stores the artist associated with the username.
+        return null;
+    }
+    private Date parseUploadedDate(String uploadedDateStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            return (Date) sdf.parse(uploadedDateStr);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid date format for uploadedDate: " + uploadedDateStr);
         }
     }
 
