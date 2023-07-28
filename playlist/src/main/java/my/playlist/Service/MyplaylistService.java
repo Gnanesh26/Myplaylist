@@ -5,8 +5,11 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import my.playlist.Dto.MyplaylistDto;
 import my.playlist.Entity.Myplaylist;
+import my.playlist.Entity.UserInfo;
 import my.playlist.Repository.MyplaylistRepository;
+import my.playlist.Repository.UserInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,7 +17,16 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MyplaylistService {
@@ -22,8 +34,14 @@ public class MyplaylistService {
     @Autowired
     MyplaylistRepository myplaylistRepository;
 
+
     @Autowired
-  Cloudinary cloudinary; // Autowire Cloudinary instance (configured with API key and secret)
+    PasswordEncoder passwordEncoder;
+    @Autowired
+    UserInfoRepository userInfoRepository;
+
+    @Autowired
+    Cloudinary cloudinary; // Autowire Cloudinary instance (configured with API key and secret)
 
     public MyplaylistDto createPlaylist(MultipartFile file, String title, String genres, String uploadedDate, String artist) {
 
@@ -85,4 +103,148 @@ public class MyplaylistService {
             throw new RuntimeException("Error while creating playlist: " + e.getMessage());
         }
     }
+
+
+    public String addUser(UserInfo userInfo) {
+        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
+        userInfoRepository.save(userInfo);
+        return "user added to system ";
+    }
+
+
+    public List<MyplaylistDto> getPlaylistsSortedByTitle(String searchTitle, String filterArtist, String filterGenres, String title) {
+        List<Myplaylist> playlists = myplaylistRepository.findAll();
+
+        // Filter playlists based on searchTitle, filterArtist, and filterGenres
+        List<Myplaylist> filteredPlaylists = playlists.stream()
+                .filter(playlist ->
+                        (searchTitle == null || playlist.getTitle().toLowerCase().contains(searchTitle.toLowerCase())) &&
+                                (filterArtist == null || playlist.getArtist().equalsIgnoreCase(filterArtist)) &&
+                                (filterGenres == null || playlist.getGenres().equalsIgnoreCase(filterGenres)))
+                .collect(Collectors.toList());
+
+        List<MyplaylistDto> sortedPlaylists;
+
+        if (title != null && !title.isEmpty()) {
+            // Check if any playlists match the specified title in sortField
+            List<Myplaylist> playlistsMatchingSortField = filteredPlaylists.stream()
+                    .filter(playlist -> playlist.getTitle().equalsIgnoreCase(title))
+                    .collect(Collectors.toList());
+
+            if (playlistsMatchingSortField.isEmpty()) {
+                throw new IllegalArgumentException("No playlists found with the provided title.");
+            }
+
+            // Sort by title matching the specified value
+            List<MyplaylistDto> playlistsWithTitle = filteredPlaylists.stream()
+                    .filter(playlist -> playlist.getTitle().equalsIgnoreCase(title))
+                    .map(playlist -> new MyplaylistDto(
+                            playlist.getId(),
+                            playlist.getTitle(),
+                            playlist.getGenres(),
+                            playlist.getUploadedDate(),
+                            playlist.getThumbnailId(),
+                            playlist.getThumbnailUrl(),
+                            playlist.getArtist()
+                    ))
+                    .collect(Collectors.toList());
+
+            List<MyplaylistDto> remainingPlaylists = filteredPlaylists.stream()
+                    .filter(playlist -> !playlist.getTitle().equalsIgnoreCase(title))
+                    .map(playlist -> new MyplaylistDto(
+                            playlist.getId(),
+                            playlist.getTitle(),
+                            playlist.getGenres(),
+                            playlist.getUploadedDate(),
+                            playlist.getThumbnailId(),
+                            playlist.getThumbnailUrl(),
+                            playlist.getArtist()
+                    ))
+                    .collect(Collectors.toList());
+
+            playlistsWithTitle.sort(Comparator.comparing(MyplaylistDto::getTitle));
+            remainingPlaylists.sort(Comparator.comparing(MyplaylistDto::getTitle));
+
+            // Combine the sorted lists
+            playlistsWithTitle.addAll(remainingPlaylists);
+
+            sortedPlaylists = playlistsWithTitle;
+        } else {
+            // If sortField is empty, sort by uploaded date in descending order
+            sortedPlaylists = filteredPlaylists.stream()
+                    .map(playlist -> new MyplaylistDto(
+                            playlist.getId(),
+                            playlist.getTitle(),
+                            playlist.getGenres(),
+                            playlist.getUploadedDate(),
+                            playlist.getThumbnailId(),
+                            playlist.getThumbnailUrl(),
+                            playlist.getArtist()
+                    ))
+                    .sorted(Comparator.comparing(MyplaylistDto::getUploadedDate).reversed())
+                    .collect(Collectors.toList());
+
+            if (sortedPlaylists.isEmpty()) {
+                throw new IllegalArgumentException("No playlists found with the provided search criteria.");
+            }
+        }
+
+        return sortedPlaylists;
+    }
+
+
+    public List<MyplaylistDto> getPlaylistsSortedByUploadedDate(String targetDateStr) {
+        List<Myplaylist> playlists = myplaylistRepository.findAll();
+
+        // Define the date format
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // Parse the targetDateStr to LocalDate
+        LocalDate targetDate = LocalDate.parse(targetDateStr, dateFormatter);
+
+        // Separate playlists with the provided date
+        List<Myplaylist> givenDatePlaylists = new ArrayList<>();
+        List<Myplaylist> remainingPlaylists = new ArrayList<>();
+
+        for (Myplaylist playlist : playlists) {
+            LocalDate playlistDate = LocalDate.parse(playlist.getUploadedDate(), dateFormatter);
+            if (playlistDate.isEqual(targetDate)) {
+                givenDatePlaylists.add(playlist);
+            } else {
+                remainingPlaylists.add(playlist);
+            }
+        }
+
+        if (givenDatePlaylists.isEmpty()) {
+            throw new IllegalArgumentException("No playlists found");
+        }
+
+        // Sort the remaining playlists in ascending order of uploaded dates
+        remainingPlaylists.sort(Comparator.comparing(playlist -> playlist.getUploadedDate()));
+
+        // Combine both lists and convert to MyplaylistDto objects
+        List<MyplaylistDto> playlistDtos = Stream.concat(
+                givenDatePlaylists.stream().map(playlist -> new MyplaylistDto(
+                        playlist.getId(),
+                        playlist.getTitle(),
+                        playlist.getGenres(),
+                        playlist.getUploadedDate(),
+                        playlist.getThumbnailId(),
+                        playlist.getThumbnailUrl(),
+                        playlist.getArtist()
+                )),
+                remainingPlaylists.stream().map(playlist -> new MyplaylistDto(
+                        playlist.getId(),
+                        playlist.getTitle(),
+                        playlist.getGenres(),
+                        playlist.getUploadedDate(),
+                        playlist.getThumbnailId(),
+                        playlist.getThumbnailUrl(),
+                        playlist.getArtist()
+                ))
+        ).collect(Collectors.toList());
+
+        return playlistDtos;
+    }
+
 }
