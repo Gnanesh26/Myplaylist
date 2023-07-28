@@ -3,6 +3,7 @@ package my.playlist.Controller;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import my.playlist.Dto.MyplaylistDto;
+import my.playlist.Dto.MyplaylistUpdate;
 import my.playlist.Entity.Myplaylist;
 import my.playlist.Entity.UserInfo;
 import my.playlist.Repository.MyplaylistRepository;
@@ -26,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @RestController
@@ -194,6 +196,62 @@ public class MyplaylistController {
             return ResponseEntity.ok("Song deleted successfully");
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
+        }
+    }
+    @PreAuthorize("hasAuthority('artist')")
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateSongById(@PathVariable Long id,
+                                                 @ModelAttribute MyplaylistUpdate myplaylistUpdate,
+                                                 Principal principal) {
+        String authenticatedArtist = principal.getName();
+
+        // Check if the authenticated artist matches the artist of the song with the given ID
+        Optional<Myplaylist> songOptional = myplaylistRepository.findById(Math.toIntExact(id));
+
+        if (!songOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Song not found.");
+        }
+
+        Myplaylist song = songOptional.get();
+
+        if (!authenticatedArtist.equals(song.getArtist())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this song.");
+        }
+
+        // Update the song with the provided data from the SongRequestModel
+        if (myplaylistUpdate.getTitle() != null) {
+            song.setTitle(myplaylistUpdate.getTitle());
+        }
+
+        if (myplaylistUpdate.getGenres() != null) {
+            song.setGenres(myplaylistUpdate.getGenres());
+        }
+
+        if (myplaylistUpdate.getUploadedDate() != null) {
+            song.setUploadedDate(myplaylistUpdate.getUploadedDate());
+        }
+
+        try {
+            // Upload the new thumbnail image to Cloudinary if provided
+            MultipartFile thumbnailFile = myplaylistUpdate.getThumbnailFile();
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                Map<?, ?> cloudinaryResponse = cloudinary.uploader().upload(thumbnailFile.getBytes(), ObjectUtils.emptyMap());
+
+                // Get the new thumbnail URL and ID from the Cloudinary response
+                String thumbnailUrl = (String) cloudinaryResponse.get("secure_url");
+                String thumbnailId = (String) cloudinaryResponse.get("public_id");
+
+                // Set the new thumbnailUrl and thumbnailId in the song object
+                song.setThumbnailUrl(thumbnailUrl);
+                song.setThumbnailId(thumbnailId);
+            }
+
+            // Save the updated song to the database
+            myplaylistRepository.save(song);
+
+            return ResponseEntity.ok("Song updated successfully");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
         }
     }
 }
