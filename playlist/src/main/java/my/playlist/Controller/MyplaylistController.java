@@ -92,9 +92,7 @@ public class MyplaylistController {
             @RequestParam(required = false) String searchTitle,
             @RequestParam(required = false) String filterArtist,
             @RequestParam(required = false) String filterGenres,
-//            @RequestParam(value = "title", defaultValue = "") String title,
             @RequestParam(required = false) String title,
-//            @RequestParam(required = false, defaultValue = "") String date) {
             @RequestParam(required = false) String date) {
 
         // Check if at least one search, filter, or sort parameter is provided
