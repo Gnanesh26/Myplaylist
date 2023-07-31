@@ -69,7 +69,7 @@ public class MyplaylistService {
             Myplaylist playlistEntity = new Myplaylist();
             playlistEntity.setTitle(title);
             playlistEntity.setGenres(genres);
-            playlistEntity.setUploadedDate(String.valueOf(parsedDate)); // Use java.sql.Date
+            playlistEntity.setUploadedDate(String.valueOf(parsedDate)); 
             playlistEntity.setThumbnailUrl(thumbnailUrl);
             playlistEntity.setThumbnailId(thumbnailId);
             playlistEntity.setArtist(artist);
@@ -151,7 +151,6 @@ public class MyplaylistService {
                     // No title provided, return playlists sorted based on filtering criteria
                     .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
                     .collect(Collectors.toList());
-
             if (sortedPlaylists.isEmpty()) {
                 throw new IllegalArgumentException("No playlists found with the provided search criteria.");
             }
@@ -206,8 +205,6 @@ public class MyplaylistService {
                 givenDatePlaylists.stream().map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist())),
                 remainingPlaylists.stream().map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
         ).collect(Collectors.toList());
-
         return playlistDtos;
     }
-
 }
