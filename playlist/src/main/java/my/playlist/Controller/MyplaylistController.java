@@ -214,16 +214,16 @@ public class MyplaylistController {
             if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
                 Map<?, ?> cloudinaryResponse = cloudinary.uploader().upload(thumbnailFile.getBytes(), ObjectUtils.emptyMap());
 
-                // Get the new thumbnail URL and ID from the Cloudinary response
+                // Get  new thumbnailUrl & thumbnailId from the Cloudinary response
                 String thumbnailUrl = (String) cloudinaryResponse.get("secure_url");
                 String thumbnailId = (String) cloudinaryResponse.get("public_id");
 
-                // Set the new thumbnailUrl and thumbnailId in the song object
+                // Set the new thumbnailUrl & thumbnailId in the song object
                 song.setThumbnailUrl(thumbnailUrl);
                 song.setThumbnailId(thumbnailId);
             }
 
-            // Save the updated song to the database
+            // Save updated song to  db
             myplaylistRepository.save(song);
 
             return ResponseEntity.ok("Song updated successfully");
