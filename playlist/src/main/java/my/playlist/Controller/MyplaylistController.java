@@ -157,13 +157,16 @@ public class MyplaylistController {
     @PreAuthorize("hasAuthority('artist')")
     @DeleteMapping("/{songId}")
     public ResponseEntity<String> deleteSong(@PathVariable Long songId, Principal principal) {
-//        String artistUsername = principal.getName();
 
         String authenticatedArtist = principal.getName();
 
-        // Retrieve the song by ID
-        Myplaylist songToDelete = myplaylistRepository.findById(Math.toIntExact(songId))
-                .orElseThrow(() -> new RuntimeException("Song not found"));
+        // Retrieve song by ID
+        Myplaylist songToDelete = myplaylistRepository.findById(Math.toIntExact(songId)).orElse(null);
+
+        // Check if the song exists
+        if (songToDelete == null) {
+            throw new RuntimeException("Song not found");
+        }
 
         // Check if the authenticated artist is the owner of the song
         if (songToDelete.getArtist().equals(principal.getName())) {
