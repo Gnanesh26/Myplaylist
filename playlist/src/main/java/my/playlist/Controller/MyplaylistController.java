@@ -28,11 +28,8 @@ public class MyplaylistController {
 
     @Autowired
     MyplaylistService myplaylistService;
-
     @Autowired
     Cloudinary cloudinary;
-
-
     @Autowired
     MyplaylistRepository myplaylistRepository;
 
@@ -54,11 +51,17 @@ public class MyplaylistController {
 
 
 
+
+
+
     // add users  to db
 //    @PostMapping("/add")
 //    public String addNewUser(@RequestBody UserInfo userInfo) {
 //        return myplaylistService.addUser(userInfo);
 //    }
+
+
+
 
 
     @PreAuthorize("hasAuthority('listener')")
@@ -95,6 +98,10 @@ public class MyplaylistController {
             return new ResponseEntity<>(songsByTitle, HttpStatus.OK);
         }
     }
+
+
+
+
 
 
     @PreAuthorize("hasAuthority('artist')")
@@ -150,6 +157,11 @@ public class MyplaylistController {
     }
 
 
+
+
+
+
+
     @PreAuthorize("hasAuthority('artist')")
     @DeleteMapping("/{songId}")
     public ResponseEntity<String> deleteSong(@PathVariable Long songId, Principal principal) {
@@ -173,6 +185,15 @@ public class MyplaylistController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
         }
     }
+
+
+
+
+
+
+
+
+
 
     @PreAuthorize("hasAuthority('artist')")
     @PutMapping("/{id}")
