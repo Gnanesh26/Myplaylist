@@ -105,7 +105,6 @@ public class MyplaylistService {
 
 
 
-
     public List<MyplaylistDto> getPlaylistsSortedByTitle(String searchTitle, String filterArtist, String filterGenres, String title) {
         List<Myplaylist> playlists = myplaylistRepository.findAll();
 
@@ -146,21 +145,21 @@ public class MyplaylistService {
             // Combine the sorted lists
             playlistsWithTitle.addAll(remainingPlaylists);
 
-            sortedPlaylists = playlistsWithTitle;
-        } else {
-            // If sortField is empty, sort by uploaded date in descending order
+            sortedPlaylists = playlistsWithTitle;}
+         else {
             sortedPlaylists = filteredPlaylists.stream()
                     .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
-                    .sorted(Comparator.comparing(MyplaylistDto::getUploadedDate).reversed())
                     .collect(Collectors.toList());
 
             if (sortedPlaylists.isEmpty()) {
                 throw new IllegalArgumentException("No playlists found with the provided search criteria.");
             }
         }
-
         return sortedPlaylists;
     }
+
+
+
 
 
 
