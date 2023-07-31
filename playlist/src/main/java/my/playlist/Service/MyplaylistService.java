@@ -97,11 +97,11 @@ public class MyplaylistService {
     }
 
 
-    public String addUser(UserInfo userInfo) {
-        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
-        userInfoRepository.save(userInfo);
-        return "user added to system ";
-    }
+//    public String addUser(UserInfo userInfo) {
+//        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
+//        userInfoRepository.save(userInfo);
+//        return "user added to system ";
+//    }
 
 
     public List<MyplaylistDto> getPlaylistsSortedByTitle(String searchTitle, String filterArtist, String filterGenres, String title) {

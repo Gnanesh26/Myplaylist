@@ -16,14 +16,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity  //method level security
 public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
         return new UserInfoUserDetailsService();
-    }
-
+    } //loading user-specific data when attempting to authenticate a user.
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -38,16 +37,6 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults());
         return httpSecurity.build();
     }
-
-    //@Bean
-//public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//    return http.csrf().disable()
-//            .authorizeHttpRequests()
-//            .requestMatchers("/songs/add").permitAll()
-//            .and()
-//            .authorizeHttpRequests().requestMatchers("/songs/**")
-//            .authenticated().and().formLogin().and().build();
-//}
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
