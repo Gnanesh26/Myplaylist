@@ -31,15 +31,12 @@ public class MyplaylistController {
 
     @Autowired
     Cloudinary cloudinary;
-    
+
 
     @Autowired
     MyplaylistRepository myplaylistRepository;
 
-
-
     // sample uploading to db
-
     @PostMapping("/upload")
     public ResponseEntity<?> createMyplaylist(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("genres") String genres, @RequestParam("uploadedDate") String uploadedDate, @RequestParam("artist") String artist) {
         try {
@@ -57,7 +54,7 @@ public class MyplaylistController {
 
 
 
-//    // add users  to db
+    // add users  to db
 //    @PostMapping("/add")
 //    public String addNewUser(@RequestBody UserInfo userInfo) {
 //        return myplaylistService.addUser(userInfo);
