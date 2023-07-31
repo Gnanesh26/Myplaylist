@@ -19,10 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +66,7 @@ public class MyplaylistService {
             Myplaylist playlistEntity = new Myplaylist();
             playlistEntity.setTitle(title);
             playlistEntity.setGenres(genres);
-            playlistEntity.setUploadedDate(String.valueOf(parsedDate)); 
+            playlistEntity.setUploadedDate(String.valueOf(parsedDate));
             playlistEntity.setThumbnailUrl(thumbnailUrl);
             playlistEntity.setThumbnailId(thumbnailId);
             playlistEntity.setArtist(artist);
@@ -107,37 +104,44 @@ public class MyplaylistService {
 
     public List<MyplaylistDto> getPlaylistsSortedByTitle(String searchTitle, String filterArtist, String filterGenres, String title) {
         List<Myplaylist> playlists = myplaylistRepository.findAll();
+        List<Myplaylist> filteredPlaylists = new ArrayList<>();
 
         // Filter playlists based on searchTitle, filterArtist, and filterGenres
-        List<Myplaylist> filteredPlaylists = playlists.stream()
-                .filter(playlist ->
-                        (searchTitle == null || playlist.getTitle().toLowerCase().contains(searchTitle.toLowerCase())) &&
-                                (filterArtist == null || playlist.getArtist().equalsIgnoreCase(filterArtist)) &&
-                                (filterGenres == null || playlist.getGenres().equalsIgnoreCase(filterGenres)))
-                .collect(Collectors.toList());
+        for (Myplaylist playlist : playlists) {
+            if ((searchTitle == null || playlist.getTitle().toLowerCase().contains(searchTitle.toLowerCase()))
+                    && (filterArtist == null || playlist.getArtist().equalsIgnoreCase(filterArtist))
+                    && (filterGenres == null || playlist.getGenres().equalsIgnoreCase(filterGenres))) {
+                filteredPlaylists.add(playlist);
+            }
+        }
 
-        List<MyplaylistDto> sortedPlaylists;
+        List<MyplaylistDto> sortedPlaylists = new ArrayList<>();
 
         if (title != null && !title.isEmpty()) {
             // Check if any playlists match the specified title in sortField
-            List<Myplaylist> playlistsMatchingSortField = filteredPlaylists.stream()
-                    .filter(playlist -> playlist.getTitle().equalsIgnoreCase(title))
-                    .collect(Collectors.toList());
+            List<Myplaylist> playlistsMatchingSortField = new ArrayList<>();
+            for (Myplaylist playlist : filteredPlaylists) {
+                if (playlist.getTitle().equalsIgnoreCase(title)) {
+                    playlistsMatchingSortField.add(playlist);
+                }
+            }
 
             if (playlistsMatchingSortField.isEmpty()) {
                 throw new IllegalArgumentException("No playlists found with the provided title.");
             }
 
             // Sort by title matching the specified value
-            List<MyplaylistDto> playlistsWithTitle = filteredPlaylists.stream()
-                    .filter(playlist -> playlist.getTitle().equalsIgnoreCase(title))
-                    .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
-                    .collect(Collectors.toList());
+            List<MyplaylistDto> playlistsWithTitle = new ArrayList<>();
+            List<MyplaylistDto> remainingPlaylists = new ArrayList<>();
 
-            List<MyplaylistDto> remainingPlaylists = filteredPlaylists.stream()
-                    .filter(playlist -> !playlist.getTitle().equalsIgnoreCase(title))
-                    .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
-                    .collect(Collectors.toList());
+            for (Myplaylist playlist : filteredPlaylists) {
+                MyplaylistDto playlistDto = new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist());
+                if (playlist.getTitle().equalsIgnoreCase(title)) {
+                    playlistsWithTitle.add(playlistDto);
+                } else {
+                    remainingPlaylists.add(playlistDto);
+                }
+            }
 
             playlistsWithTitle.sort(Comparator.comparing(MyplaylistDto::getTitle));
             remainingPlaylists.sort(Comparator.comparing(MyplaylistDto::getTitle));
@@ -145,18 +149,20 @@ public class MyplaylistService {
             // Combine the sorted lists
             playlistsWithTitle.addAll(remainingPlaylists);
 
-            sortedPlaylists = playlistsWithTitle;}
-         else {
-            sortedPlaylists = filteredPlaylists.stream()
-                    // No title provided, return playlists sorted based on filtering criteria
-                    .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
-                    .collect(Collectors.toList());
+            sortedPlaylists = playlistsWithTitle;
+        } else {
+            // No title provided, return playlists sorted based on filtering criteria
+            for (Myplaylist playlist : filteredPlaylists) {
+                sortedPlaylists.add(new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()));
+            }
+
             if (sortedPlaylists.isEmpty()) {
                 throw new IllegalArgumentException("No playlists found with the provided search criteria.");
             }
         }
         return sortedPlaylists;
     }
+
 
 
 
@@ -198,13 +204,18 @@ public class MyplaylistService {
         }
 
         // Sort the remaining playlists in ascending order of uploaded dates
-        remainingPlaylists.sort(Comparator.comparing(playlist -> playlist.getUploadedDate()));
+        Collections.sort(remainingPlaylists, Comparator.comparing(Myplaylist::getUploadedDate));
 
         // Combine both lists and convert to MyplaylistDto objects
-        List<MyplaylistDto> playlistDtos = Stream.concat(
-                givenDatePlaylists.stream().map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist())),
-                remainingPlaylists.stream().map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
-        ).collect(Collectors.toList());
+        List<MyplaylistDto> playlistDtos = new ArrayList<>();
+
+        for (Myplaylist playlist : givenDatePlaylists) {
+            playlistDtos.add(new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()));
+        }
+
+        for (Myplaylist playlist : remainingPlaylists) {
+            playlistDtos.add(new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()));
+        }
+
         return playlistDtos;
-    }
-}
+    } }
