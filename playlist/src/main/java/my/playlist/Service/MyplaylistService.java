@@ -148,6 +148,7 @@ public class MyplaylistService {
             sortedPlaylists = playlistsWithTitle;}
          else {
             sortedPlaylists = filteredPlaylists.stream()
+                    // No title provided, return playlists sorted based on filtering criteria
                     .map(playlist -> new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()))
                     .collect(Collectors.toList());
 
