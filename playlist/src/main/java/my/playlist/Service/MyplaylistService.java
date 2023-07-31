@@ -39,7 +39,7 @@ public class MyplaylistService {
     UserInfoRepository userInfoRepository;
 
     @Autowired
-    Cloudinary cloudinary; // Autowire Cloudinary instance (configured with API key and secret)
+    Cloudinary cloudinary;
 
     public MyplaylistDto createPlaylist(MultipartFile file, String title, String genres, String uploadedDate, String artist) {
 
@@ -104,6 +104,8 @@ public class MyplaylistService {
 //    }
 
 
+
+
     public List<MyplaylistDto> getPlaylistsSortedByTitle(String searchTitle, String filterArtist, String filterGenres, String title) {
         List<Myplaylist> playlists = myplaylistRepository.findAll();
 
@@ -159,6 +161,11 @@ public class MyplaylistService {
 
         return sortedPlaylists;
     }
+
+
+
+
+
 
 
     public List<MyplaylistDto> getPlaylistsSortedByUploadedDate(String targetDateStr) {

@@ -59,10 +59,10 @@ public class MyplaylistController {
 
 
 //    // add users  to db
-    @PostMapping("/add")
-    public String addNewUser(@RequestBody UserInfo userInfo) {
-        return myplaylistService.addUser(userInfo);
-    }
+//    @PostMapping("/add")
+//    public String addNewUser(@RequestBody UserInfo userInfo) {
+//        return myplaylistService.addUser(userInfo);
+//    }
 
 
     @PreAuthorize("hasAuthority('listener')")
@@ -174,6 +174,7 @@ public class MyplaylistController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
         }
     }
+
     @PreAuthorize("hasAuthority('artist')")
     @PutMapping("/{id}")
     public ResponseEntity<String> updateSongById(@PathVariable Long id,
@@ -194,7 +195,7 @@ public class MyplaylistController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this song.");
         }
 
-        // Update the song with the provided data from the SongRequestModel
+        // Update the song with the provided data MyplaylistUpdate
         if (myplaylistUpdate.getTitle() != null) {
             song.setTitle(myplaylistUpdate.getTitle());
         }

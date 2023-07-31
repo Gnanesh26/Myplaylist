@@ -24,6 +24,8 @@ public class MyplaylistDto {
     public MyplaylistDto() {
     }
 
+    public MyplaylistDto(String noSortFieldSpecified, String title, String genres, String uploadedDate, String thumbnailId, String thumbnailUrl, String artist) {
+    }
 
 
     public Long getId() {
