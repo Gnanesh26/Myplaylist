@@ -292,4 +292,35 @@ public class MyplaylistService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
         }
     }
+
+
+
+
+    public ResponseEntity<String> deleteSong(Long songId, Principal principal) {
+        // Get the name of the authenticated artist (current user)
+        String authenticatedArtist = principal.getName();
+
+        // Get  song by ID from  db
+        Myplaylist songToDelete = myplaylistRepository.findById(Math.toIntExact(songId)).orElse(null);
+
+        // Checks if song exists in the db
+        if (songToDelete == null) {
+            // If song is not found, throw a error message
+            throw new RuntimeException("Song not found");
+        }
+
+        // Check if the authenticated artist is the owner of the song
+        if (songToDelete.getArtist().equals(authenticatedArtist)) {
+
+            // If the authenticated artist is the owner, delete the song from the db
+            myplaylistRepository.delete(songToDelete);
+
+            // Return a successful response with a message indicating the song was deleted successfully
+            return ResponseEntity.ok("Song deleted successfully");
+        } else {
+
+            // If the authenticated artist is not the owner, return an error message
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
+        }
+    }
 }

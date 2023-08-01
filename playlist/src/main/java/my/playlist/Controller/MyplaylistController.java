@@ -106,12 +106,7 @@ public class MyplaylistController {
 
     @PreAuthorize("hasAuthority('artist')")
     @PostMapping("/byusers")
-    public ResponseEntity<String> addSong(@RequestParam String title,
-                                          @RequestParam String genres,
-                                          @RequestParam(value = "uploadedDate") String uploadedDateStr,
-                                          @RequestParam MultipartFile thumbnailFile,
-                                          @RequestParam String artist,
-                                          Principal principal) {
+    public ResponseEntity<String> addSong(@RequestParam String title, @RequestParam String genres, @RequestParam(value = "uploadedDate") String uploadedDateStr, @RequestParam MultipartFile thumbnailFile, @RequestParam String artist, Principal principal) {
         return myplaylistService.addSong(title, genres, uploadedDateStr, thumbnailFile, artist, principal);
     }
 
@@ -123,25 +118,7 @@ public class MyplaylistController {
     @PreAuthorize("hasAuthority('artist')")
     @DeleteMapping("/{songId}")
     public ResponseEntity<String> deleteSong(@PathVariable Long songId, Principal principal) {
-
-        String authenticatedArtist = principal.getName();
-
-        // Retrieve song by ID
-        Myplaylist songToDelete = myplaylistRepository.findById(Math.toIntExact(songId)).orElse(null);
-
-        // Check if the song exists
-        if (songToDelete == null) {
-            throw new RuntimeException("Song not found");
-        }
-
-        // Check if the authenticated artist is the owner of the song
-        if (songToDelete.getArtist().equals(principal.getName())) {
-            // Delete the song
-            myplaylistRepository.delete(songToDelete);
-            return ResponseEntity.ok("Song deleted successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
-        }
+        return myplaylistService.deleteSong(songId, principal);
     }
 
 
