@@ -4,6 +4,7 @@ package my.playlist.Service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import my.playlist.Dto.MyplaylistDto;
+import my.playlist.Dto.MyplaylistUpdate;
 import my.playlist.Entity.Myplaylist;
 import my.playlist.Entity.UserInfo;
 import my.playlist.Repository.MyplaylistRepository;
@@ -321,6 +322,66 @@ public class MyplaylistService {
 
             // If the authenticated artist is not the owner, return an error message
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this song");
+        }
+    }
+
+
+
+
+    public ResponseEntity<String> updateSongById(Long id, MyplaylistUpdate myplaylistUpdate,Principal principal) {
+        // Get the name of the authenticated artist (current user)
+        String authenticatedArtist = principal.getName();
+
+        // Check if the authenticated artist matches the artist of the song with  given ID
+        Optional<Myplaylist> songOptional = myplaylistRepository.findById(Math.toIntExact(id));
+
+        if (!songOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Song not found.");
+        }
+
+        Myplaylist song = songOptional.get();
+
+        if (!authenticatedArtist.equals(song.getArtist())) {
+            // If the authenticated artist is not the owner, return a forbidden status with an error message
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this song.");
+        }
+
+        // Update the song with the provided data MyplaylistUpdate
+        if (myplaylistUpdate.getTitle() != null) {
+            song.setTitle(myplaylistUpdate.getTitle());
+        }
+
+        if (myplaylistUpdate.getGenres() != null) {
+            song.setGenres(myplaylistUpdate.getGenres());
+        }
+
+        if (myplaylistUpdate.getUploadedDate() != null) {
+            song.setUploadedDate(myplaylistUpdate.getUploadedDate());
+        }
+
+        try {
+            // Upload the new thumbnail image to Cloudinary if provided
+            MultipartFile thumbnailFile = myplaylistUpdate.getThumbnailFile();
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                Map<?, ?> cloudinaryResponse = cloudinary.uploader().upload(thumbnailFile.getBytes(), ObjectUtils.emptyMap());
+
+                // Get the new thumbnailUrl & thumbnailId from the Cloudinary response
+                String thumbnailUrl = (String) cloudinaryResponse.get("secure_url");
+                String thumbnailId = (String) cloudinaryResponse.get("public_id");
+
+                // Set the new thumbnailUrl & thumbnailId in the song object
+                song.setThumbnailUrl(thumbnailUrl);
+                song.setThumbnailId(thumbnailId);
+            }
+
+            // Save the updated song to the database using the myplaylistRepository
+            myplaylistRepository.save(song);
+
+            // Return a successful response with a message indicating the song was updated successfully
+            return ResponseEntity.ok("Song updated successfully");
+        } catch (IOException e) {
+            // If an IOException occurs during thumbnail upload, return an internal server error status with an error message
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
         }
     }
 }
