@@ -184,6 +184,7 @@ public class MyplaylistService {
 
 
     public List<MyplaylistDto> getPlaylistsSortedByUploadedDate(String targetDateStr) {
+        // Get all playlists from the repo
         List<Myplaylist> playlists = myplaylistRepository.findAll();
 
         // Define the date format
@@ -196,15 +197,18 @@ public class MyplaylistService {
         List<Myplaylist> givenDatePlaylists = new ArrayList<>();
         List<Myplaylist> remainingPlaylists = new ArrayList<>();
 
+        // Iterate through all playlists to separate them based on the uploaded date
         for (Myplaylist playlist : playlists) {
             LocalDate playlistDate = LocalDate.parse(playlist.getUploadedDate(), dateFormatter);
             if (playlistDate.isEqual(targetDate)) {
+                // Add playlists with the provided date to one list
                 givenDatePlaylists.add(playlist);
             } else {
+                // Add remaining playlists to another list
                 remainingPlaylists.add(playlist);
             }
         }
-
+        // Check if any playlists match with given date
         if (givenDatePlaylists.isEmpty()) {
             throw new IllegalArgumentException("No playlists found");
         }
@@ -215,10 +219,12 @@ public class MyplaylistService {
         // Combine both lists and convert to MyplaylistDto objects
         List<MyplaylistDto> playlistDtos = new ArrayList<>();
 
+        // Add playlists with the provided date to the result list
         for (Myplaylist playlist : givenDatePlaylists) {
             playlistDtos.add(new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()));
         }
 
+        // Add the remaining playlists to the result list
         for (Myplaylist playlist : remainingPlaylists) {
             playlistDtos.add(new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()));
         }
