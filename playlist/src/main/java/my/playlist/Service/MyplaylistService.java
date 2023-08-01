@@ -9,10 +9,13 @@ import my.playlist.Entity.UserInfo;
 import my.playlist.Repository.MyplaylistRepository;
 import my.playlist.Repository.UserInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.security.Principal;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -230,4 +233,63 @@ public class MyplaylistService {
         }
 
         return playlistDtos;
-    } }
+    }
+
+
+
+
+    public ResponseEntity<String> addSong(String title, String genres, String uploadedDateStr, MultipartFile thumbnailFile, String artist, Principal principal) {
+        // Get the name of the authenticated artist (current user)
+        String authenticatedArtist = principal.getName();
+
+        // Check if the authenticated artist matches the provided artist name
+        // If not, return error message
+        if (artist != null && !authenticatedArtist.equals(artist)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to upload songs for other artists.");
+        }
+
+        // Create a new Song object with the extracted data
+        Myplaylist newSong = new Myplaylist();
+
+        // Set the song title if provided
+        if (title != null) {
+            newSong.setTitle(title);
+        }
+
+        // Set the song genres if provided
+        if (genres != null) {
+            newSong.setGenres(genres);
+        }
+
+        // Set the uploaded date for the song
+        newSong.setUploadedDate(uploadedDateStr);
+
+        // Set the artist name for the song
+        newSong.setArtist(artist);
+
+        try {
+            // Upload the thumbnail image to Cloudinary
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                // Use Cloudinary's uploader to upload the thumbnail image
+                Map<?, ?> cloudinaryResponse = cloudinary.uploader().upload(thumbnailFile.getBytes(), ObjectUtils.emptyMap());
+
+                // Get the thumbnail URL and ID from the Cloudinary response
+                String thumbnailUrl = (String) cloudinaryResponse.get("secure_url");
+                String thumbnailId = (String) cloudinaryResponse.get("public_id");
+
+                // Set the thumbnailUrl and thumbnailId in the newSong object
+                newSong.setThumbnailUrl(thumbnailUrl);
+                newSong.setThumbnailId(thumbnailId);
+            }
+
+            // Save the new song to the database
+            myplaylistRepository.save(newSong);
+
+            // Return a successful response with a message that song was added successfully
+            return ResponseEntity.ok("Song added successfully");
+        } catch (IOException e) {
+            // If an IOException occurs during thumbnail upload, return an internal server error status with an error message
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
+        }
+    }
+}

@@ -108,54 +108,12 @@ public class MyplaylistController {
     @PostMapping("/byusers")
     public ResponseEntity<String> addSong(@RequestParam String title,
                                           @RequestParam String genres,
-                                          @RequestParam (value ="uploadedDate")String uploadedDateStr,
+                                          @RequestParam(value = "uploadedDate") String uploadedDateStr,
                                           @RequestParam MultipartFile thumbnailFile,
                                           @RequestParam String artist,
                                           Principal principal) {
-        String authenticatedArtist = principal.getName();
-
-        // Check if the authenticated artist matches the provided artist name
-        if (artist != null && !authenticatedArtist.equals(artist)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to upload songs for other artists.");
-        }
-
-        // Create a new Song object with the extracted data
-        Myplaylist newSong = new Myplaylist();
-
-        if (title != null) {
-            newSong.setTitle(title);
-        }
-
-        if (genres != null) {
-            newSong.setGenres(genres);
-        }
-        newSong.setUploadedDate(uploadedDateStr);
-        newSong.setUploadedDate(uploadedDateStr);
-        newSong.setArtist(artist);
-
-        try {
-            // Upload the thumbnail image to Cloudinary
-            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
-                Map<?, ?> cloudinaryResponse = cloudinary.uploader().upload(thumbnailFile.getBytes(), ObjectUtils.emptyMap());
-
-                // Get the thumbnail URL and ID from the Cloudinary response
-                String thumbnailUrl = (String) cloudinaryResponse.get("secure_url");
-                String thumbnailId = (String) cloudinaryResponse.get("public_id");
-
-                // Set the thumbnailUrl and thumbnailId in the newSong object
-                newSong.setThumbnailUrl(thumbnailUrl);
-                newSong.setThumbnailId(thumbnailId);
-            }
-
-            // Save the new song to the database
-            myplaylistRepository.save(newSong);
-
-            return ResponseEntity.ok("Song added successfully");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading thumbnail");
-        }
+        return myplaylistService.addSong(title, genres, uploadedDateStr, thumbnailFile, artist, principal);
     }
-
 
 
 
