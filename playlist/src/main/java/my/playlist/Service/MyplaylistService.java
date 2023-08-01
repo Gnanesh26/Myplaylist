@@ -89,11 +89,11 @@ public class MyplaylistService {
     }
 
 
-//    public String addUser(UserInfo userInfo) {
-//        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
-//        userInfoRepository.save(userInfo);
-//        return "user added to system ";
-//    }
+    public String addUser(UserInfo userInfo) {
+        userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
+        userInfoRepository.save(userInfo);
+        return "user added to system ";
+    }
 
 
 
@@ -145,6 +145,7 @@ public class MyplaylistService {
             playlistsWithTitle.addAll(remainingPlaylists);
 
             sortedPlaylists = playlistsWithTitle;
+
         } else {
             // No title provided, return playlists sorted based on filtering criteria
             for (Myplaylist playlist : filteredPlaylists) {

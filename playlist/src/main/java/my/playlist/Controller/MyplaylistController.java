@@ -55,10 +55,10 @@ public class MyplaylistController {
 
 
     // add users  to db
-//    @PostMapping("/add")
-//    public String addNewUser(@RequestBody UserInfo userInfo) {
-//        return myplaylistService.addUser(userInfo);
-//    }
+    @PostMapping("/add")
+    public String addNewUser(@RequestBody UserInfo userInfo) {
+        return myplaylistService.addUser(userInfo);
+    }
 
 
 
