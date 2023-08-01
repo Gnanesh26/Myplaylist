@@ -98,6 +98,7 @@ public class MyplaylistService {
 
 
     public List<MyplaylistDto> getPlaylistsSortedByTitle(String searchTitle, String filterArtist, String filterGenres, String title) {
+        // Get all playlists from  repo
         List<Myplaylist> playlists = myplaylistRepository.findAll();
         List<Myplaylist> filteredPlaylists = new ArrayList<>();
 
@@ -106,6 +107,7 @@ public class MyplaylistService {
             if ((searchTitle == null || playlist.getTitle().toLowerCase().contains(searchTitle.toLowerCase()))
                     && (filterArtist == null || playlist.getArtist().equalsIgnoreCase(filterArtist))
                     && (filterGenres == null || playlist.getGenres().equalsIgnoreCase(filterGenres))) {
+                // Add  playlist to  filtered list if it matches the search criteria
                 filteredPlaylists.add(playlist);
             }
         }
@@ -117,11 +119,13 @@ public class MyplaylistService {
             List<Myplaylist> playlistsMatchingSortField = new ArrayList<>();
             for (Myplaylist playlist : filteredPlaylists) {
                 if (playlist.getTitle().equalsIgnoreCase(title)) {
+                    // Add playlists with the specified title to a separate list
                     playlistsMatchingSortField.add(playlist);
                 }
             }
 
             if (playlistsMatchingSortField.isEmpty()) {
+                // If no playlists with given title found, throw an exception
                 throw new IllegalArgumentException("No playlists found with the provided title.");
             }
 
@@ -132,27 +136,33 @@ public class MyplaylistService {
             for (Myplaylist playlist : filteredPlaylists) {
                 MyplaylistDto playlistDto = new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist());
                 if (playlist.getTitle().equalsIgnoreCase(title)) {
+                    // Add playlists with the given title to one list
                     playlistsWithTitle.add(playlistDto);
                 } else {
+                    // Add remaining playlists to another list
                     remainingPlaylists.add(playlistDto);
                 }
             }
 
+            // Sort playlists with the given title and remaining playlists be sort alphabetically by title
             playlistsWithTitle.sort(Comparator.comparing(MyplaylistDto::getTitle));
             remainingPlaylists.sort(Comparator.comparing(MyplaylistDto::getTitle));
 
             // Combine the sorted lists
             playlistsWithTitle.addAll(remainingPlaylists);
 
+            // Assign the sorted playlists to the result variable
             sortedPlaylists = playlistsWithTitle;
 
         } else {
             // No title provided, return playlists sorted based on filtering criteria
             for (Myplaylist playlist : filteredPlaylists) {
+                // Create playlist DTO objects and add them to the sorted list
                 sortedPlaylists.add(new MyplaylistDto(playlist.getId(), playlist.getTitle(), playlist.getGenres(), playlist.getUploadedDate(), playlist.getThumbnailId(), playlist.getThumbnailUrl(), playlist.getArtist()));
             }
 
             if (sortedPlaylists.isEmpty()) {
+                // If no playlists match the filtering criteria, throw an exception
                 throw new IllegalArgumentException("No playlists found with the provided search criteria.");
             }
         }
