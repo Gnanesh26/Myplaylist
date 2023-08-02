@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.security.Principal;
 import java.util.List;
 
@@ -56,11 +55,7 @@ public class MyplaylistController {
     @PreAuthorize("hasAuthority('listener')")
     @GetMapping("/songs")
     public ResponseEntity<?> getSongs(
-            @RequestParam(required = false) String searchTitle,
-            @RequestParam(required = false) String filterArtist,
-            @RequestParam(required = false) String filterGenres,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String date) {
+            @RequestParam(required = false) String searchTitle,@RequestParam(required = false) String filterArtist, @RequestParam(required = false) String filterGenres, @RequestParam(required = false) String title, @RequestParam(required = false) String date) {
 
         // Check if at least one search, filter, or sort parameter is provided
         if (StringUtils.isAllBlank(searchTitle, filterArtist, filterGenres) && StringUtils.isBlank(title) && StringUtils.isBlank(date)) {
@@ -105,8 +100,7 @@ public class MyplaylistController {
 
     @PreAuthorize("hasAuthority('artist')")
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateSongById(@PathVariable Long id,
-                                                 @ModelAttribute MyplaylistUpdate myplaylistUpdate,
+    public ResponseEntity<String> updateSongById(@PathVariable Long id,@ModelAttribute MyplaylistUpdate myplaylistUpdate,
                                                  Principal principal) {
         return myplaylistService.updateSongById(id, myplaylistUpdate, principal);
     }
