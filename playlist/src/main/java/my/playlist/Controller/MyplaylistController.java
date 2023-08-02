@@ -100,8 +100,7 @@ public class MyplaylistController {
 
     @PreAuthorize("hasAuthority('artist')")
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateSongById(@PathVariable Long id,@ModelAttribute MyplaylistUpdate myplaylistUpdate,
-                                                 Principal principal) {
+    public ResponseEntity<String> updateSongById(@PathVariable Long id,@ModelAttribute MyplaylistUpdate myplaylistUpdate,Principal principal) {
         return myplaylistService.updateSongById(id, myplaylistUpdate, principal);
     }
 }
