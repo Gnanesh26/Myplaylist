@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    username: postgres
+    password: test@1234
+    url: jdbc:postgresql://localhost:5432/Mysongs?createDatabaseIfNotExist=true
+  liquibase:
+    change-log: classpath:db/changelog/liquibase-changelog.xml
+    enabled: true
+server:
+  port: 8081
+cloudinary:
+  cloudName: dwvzgfeyd
+  apiKey: 145956373718475
+  apiSecret: aPNMdRqAQrA2MM8Hk48D0gNnNao
