@@ -12,7 +12,7 @@ spring:
     change-log: classpath:db/changelog/liquibase-changelog.xml
     enabled: true
 server:
-  port: 8081
+  port: 9090
 cloudinary:
   cloudName: dwvzgfeyd
   apiKey: 145956373718475
